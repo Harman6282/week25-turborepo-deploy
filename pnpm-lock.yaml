@@ -18,6 +18,15 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
+  apps/http-server:
+    devDependencies:
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/prisma
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+
   apps/web:
     dependencies:
       '@repo/ui':
@@ -57,6 +66,15 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
+
+  apps/ws-server:
+    devDependencies:
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/prisma
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
 
   packages/eslint-config:
     devDependencies:
