@@ -29,6 +29,6 @@ app.post("/signup", async (req: Request, res: Response): Promise<any> => {
     .json({ success: true, message: "user created successfully", user });
 });
 
-app.listen(3000, () => {
+app.listen(3002, () => {
   console.log("listening on 3002...");
 });
