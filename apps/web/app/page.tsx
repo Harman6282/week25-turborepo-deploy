@@ -22,7 +22,7 @@ export default async function Home() {
   const user = await client.user.findFirst();
   return (
     <div className={styles.page} style={{ fontSize: 40 }}>
-      this is the next js app <br />
+       next js app 😋 <br />
       {"username: " + user?.username}
       <br />
       {"password: " + user?.password}
