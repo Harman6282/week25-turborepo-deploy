@@ -6,29 +6,41 @@ on:
       - "main"
 
 jobs:
-  re-deploy-change:
-    name: Redeploying the changed code onto the stagging envrionment
+  redeploy_everything:
+    name: Deploying everything to staging cluster
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: SSH into VM
+
+      - name: Setup SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
+          chmod 600 ~/ssh_key
+
+      - name: Setup known_hosts
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSHKEY }}" &> ~/.ssh/ssh_key
-          sudo chmod 700 ~/.ssh
-          sudo chmod 600 ~/.ssh/ssh_key
-          ls -la ~/.ssh
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ssh_key root@139.59.77.223 -t "pwd
-          ls 
-          cd week25-turborepo-deploy && git pull origin main
-          npm install pnpm -g
-          cd packages/db
-          pnpm install
-          echo "${{ secrets.DB_SECRET_DEV }}" &> .env
-          cd ../..
-          pnpm install
-          pnpm build
-          pm2 restart all"
+          echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: SSH and deploy
+        run: |
+          ssh -i ~/ssh_key \
+              -o StrictHostKeyChecking=no \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=120 \
+              root@139.59.77.223 "
+            cd week25-turborepo-deploy &&
+            git reset --hard &&
+            git clean -fd &&
+            git pull origin main &&
+            export PATH=/root/.nvm/versions/node/v22.16.0/bin:\$PATH &&
+            npm install -g pnpm &&
+            pnpm install &&
+            pnpm run build &&
+            pm2 restart fe-server &&
+            pm2 restart http-server &&
+            pm2 restart ws-server
+          "
