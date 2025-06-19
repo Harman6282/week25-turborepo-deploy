@@ -23,7 +23,7 @@ jobs:
         run: |
           ssh -i ~/ssh_key -o StrictHostKeyChecking=no root@139.59.77.223 << 'EOF'
             set -e
-            cd week-25-ci-next-app/
+            cd week25-turborepo-deploy/
             git pull origin main
 
             export PATH=/root/.nvm/versions/node/v22.16.0/bin:$PATH
