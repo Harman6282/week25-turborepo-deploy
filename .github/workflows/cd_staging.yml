@@ -1,4 +1,4 @@
-name: Deploy to staging
+name: Deploy TurboRepo to Staging
 
 on:
   push:
@@ -6,15 +6,11 @@ on:
       - "main"
 
 jobs:
-  redeploy_everything:
-    name: Deploying everything to staging cluster
+  deploy:
+    name: Deploying to staging server
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-
       - name: Setup SSH key
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
@@ -25,7 +21,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-      - name: SSH and deploy
+      - name: SSH and Deploy
         run: |
           ssh -i ~/ssh_key \
               -o StrictHostKeyChecking=no \
@@ -33,13 +29,23 @@ jobs:
               -o ServerAliveCountMax=120 \
               root@139.59.77.223 "
             cd week25-turborepo-deploy &&
+
+            echo '🧹 Cleaning and pulling latest code...' &&
             git reset --hard &&
             git clean -fd &&
             git pull origin main &&
+
+            echo '🔧 Setting up environment PATH...' &&
             export PATH=/root/.nvm/versions/node/v22.16.0/bin:\$PATH &&
+
+            echo '📦 Installing dependencies...' &&
             npm install -g pnpm &&
             pnpm install &&
+
+            echo '🚀 Building monorepo with Turbo...' &&
             pnpm run build &&
+
+            echo '🔁 Restarting all PM2 services...' &&
             pm2 restart fe-server &&
             pm2 restart http-server &&
             pm2 restart ws-server
