@@ -2,51 +2,28 @@ name: Deploy TurboRepo to Staging
 
 on:
   push:
-    branches:
-      - "main"
+    branches: ["main"]
 
 jobs:
   deploy:
-    name: Deploying to staging server
     runs-on: ubuntu-latest
 
     steps:
-      - name: Setup SSH key
+      - name: Setup SSH
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
           chmod 600 ~/ssh_key
-
-      - name: Setup known_hosts
-        run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-      - name: SSH and Deploy
+      - name: Deploy via SSH
         run: |
-          ssh -i ~/ssh_key \
-              -o StrictHostKeyChecking=no \
-              -o ServerAliveInterval=30 \
-              -o ServerAliveCountMax=120 \
-              root@139.59.77.223 "
+          ssh -i ~/ssh_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=120 root@139.59.77.223 "
             cd week25-turborepo-deploy &&
-
-            echo '🧹 Cleaning and pulling latest code...' &&
-            git reset --hard &&
-            git clean -fd &&
-            git pull origin main &&
-
-            echo '🔧 Setting up environment PATH...' &&
+            git reset --hard && git clean -fd && git pull origin main &&
             export PATH=/root/.nvm/versions/node/v22.16.0/bin:\$PATH &&
-
-            echo '📦 Installing dependencies...' &&
             npm install -g pnpm &&
             pnpm install &&
-
-            echo '🚀 Building monorepo with Turbo...' &&
             pnpm run build &&
-
-            echo '🔁 Restarting all PM2 services...' &&
-            pm2 restart fe-server &&
-            pm2 restart http-server &&
-            pm2 restart ws-server
+            pm2 restart fe-server http-server ws-server
           "
