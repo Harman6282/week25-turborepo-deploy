@@ -13,7 +13,7 @@ jobs:
       - name: 📦 Setup SSH Key & Known Hosts
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
-          chmod 600 ~/ssh_key
+          chmod 700 ~/ssh_key
           
           mkdir -p ~/.ssh
           echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
