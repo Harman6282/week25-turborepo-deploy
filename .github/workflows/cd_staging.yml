@@ -23,7 +23,11 @@ jobs:
 
       - name: SSH and deploy
         run: |
-          ssh -i ~/ssh_key -o StrictHostKeyChecking=no root@139.59.77.223 "
+          ssh -i ~/ssh_key \
+              -o StrictHostKeyChecking=no \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=120 \
+              root@139.59.77.223 "
             cd week25-turborepo-deploy &&
             git reset --hard &&
             git clean -fd &&
@@ -36,3 +40,4 @@ jobs:
             pm2 restart http-server &&
             pm2 restart ws-server
           "
+
