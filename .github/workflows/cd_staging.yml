@@ -1,29 +1,18 @@
-name: Deploy TurboRepo to Staging
-
+name: Deploy to staging
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
 
 jobs:
-  deploy:
+  redeploy_everything:
     runs-on: ubuntu-latest
-
+    name: Deploying everything to the staging cluster
     steps:
-      - name: Setup SSH
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
-          chmod 600 ~/ssh_key
-          mkdir -p ~/.ssh
-          echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-
-      - name: Deploy via SSH
-        run: |
-          ssh -i ~/ssh_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=120 root@139.59.77.223 "
-            cd week25-turborepo-deploy &&
-            git reset --hard && git clean -fd && git pull origin main &&
-            export PATH=/root/.nvm/versions/node/v22.16.0/bin:\$PATH &&
-            npm install -g pnpm &&
-            pnpm install &&
-            pnpm run build &&
-            pm2 restart fe-server http-server ws-server
-          "
+      - run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          mkdir -p /home/runner/.ssh
+          ls /home/runner/.ssh
+          touch /home/runner/.ssh/known_hosts
+          echo "${{ secrets.KNOWN_HOSTS }}" &> /home/runner/.ssh/known_hosts
+          chmod 700 /home/runner/ssh_key
+          ssh -i ~/ssh_key root@139.59.77.223 -t "cd week25-turborepo-deploy/ && git pull origin main && export PATH=/root/.nvm/versions/node/v22.13.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin && npm install -g pnpm && pnpm install && pnpm run build && pm2 restart fe-sever && pm2 restart http-sever && pm2 restart ws-sever"
